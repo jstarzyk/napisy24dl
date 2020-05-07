@@ -3,21 +3,19 @@ const filterStreaming = ['web']
 const filterTV = ['hdtv']
 const filters = [filterBluRay, filterStreaming, filterTV]
 
-let filterIndex = -1
+let filterIndex
 let rememberFilter = false
 
 let formatIndex = 2
 
-const seasons = Array.from(document.querySelectorAll('table')).filter(e => e.id === 'translationsTable')
+let seasons
 let episodes
 let entries
 
 let toggleSubtitles
-// let expanded = false
 
 let t
 let episode
-let numberOfEpisodes
 
 let seasonIndex = 0
 let episodeIndex = 0
@@ -46,20 +44,12 @@ function download() {
 
 function tryDownload() {
     if (entries.length > episodes.length) {
-//         if (!expanded) {
-//             expanded = true
-            clearTimeout(t)
-            download(episode)
-            toggleSubtitles.click()
-            setTimeout(next, 500)
-//             next()
-//         }
-//         else {
-//             t = setTimeout(tryDownload, 100)
-//         }
+        clearTimeout(t)
+        download(episode)
+        toggleSubtitles.click()
+        setTimeout(next, 500)
     }
     else {
-//         expanded = false
         t = setTimeout(tryDownload, 500)
     }
 }
@@ -103,6 +93,12 @@ function nextEpisode() {
     }
 }
 
-if (seasons.length > 0) {
-    nextSeason()
+function start() {
+    seasons = Array.from(document.querySelectorAll('table')).filter(e => e.id === 'translationsTable')
+
+    if (seasons.length > 0) {
+        nextSeason()
+    }
 }
+
+start()
