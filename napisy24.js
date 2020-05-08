@@ -71,25 +71,30 @@ function next() {
     else {
         seasonIndex = seasonSelection.indexOf(true, seasonIndex + 1)
         if (seasonIndex !== -1) {
-            episodeIndex = 0
+            // episodeIndex = 0
             nextSeason()
         }
     }
 }
 
-// TODO: Fix skipping
 function nextSeason() {
     if (!rememberFilter) {
-        let filterNumber = ''
-        while (!['1', '2', '3'].contains(filterNumber)) {
-            filterNumber = prompt(`Choose filter number for season ${seasonIndex + 1} (1 - BluRay, 2 - Streaming, 3 - TV)`)
+        let input
+        while (!['1', '2', '3', null].contains(input)) {
+            input = prompt(`Choose filter number for season ${seasonIndex + 1} (1 - BluRay, 2 - Streaming, 3 - TV)`)
         }
-        console.info(`Using filter ${filterNumber} for season ${seasonIndex + 1}`)
-        filterIndex = Number.parseInt(filterNumber) - 1
-        rememberFilter = ['y', ''].contains(prompt('Remember filter? [Y/n]').toLowerCase())
+        if (input === null) {
+            return next()
+        }
+        else {
+            filterIndex = Number.parseInt(input) - 1
+            rememberFilter = ['y', ''].contains(prompt('Remember filter? [Y/n]').toLowerCase())
+        }
     }
+    console.info(`Using filter ${filterIndex + 1} for season ${seasonIndex + 1}`)
     tableEntries = seasons[seasonIndex].children[1].children
     tableEpisodes = Array.from(tableEntries)
+    episodeIndex = 0
     nextEpisode()
 }
 
