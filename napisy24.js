@@ -1,4 +1,4 @@
-const filterBluRay = ['bluray', 'bdrip', 'brrip']
+const filterBluRay = ['bluray', 'blu-ray', 'bdrip', 'brrip']
 const filterStreaming = ['web']
 const filterTV = ['hdtv']
 const filters = [filterBluRay, filterStreaming, filterTV]
@@ -21,6 +21,7 @@ let seasonIndex = -1
 let episodeIndex = -1
 
 function download() {
+    let [seasonNumber, episodeNumber] = [seasonIndex, episodeIndex].map(i => i + 1).map(n => n.toString()).map(s => s.padStart(2, '0'))
     let subtitles = Array.from(tableEntries).filter(e => e.attributes['data-napis-id'])
     let subtitleName
     let subtitleIndex = subtitles.findIndex(s => {
@@ -32,15 +33,17 @@ function download() {
         }
         return false
     })
-    if (subtitleIndex !== -1) {
-        let downloads = Array.from(subtitles[subtitleIndex].firstChild.firstChild.children[5].children).filter(e => e.tagName === 'A')
-        console.info('Downloading subtitle: ' + subtitleName)
-        downloads[formatIndex].click()
+    if (subtitleIndex === -1 && subtitles.length === 1) {
+        console.warn(`The only available subtitle for S${seasonNumber}E${episodeNumber} doesn't match the specified filter`)
+        subtitleIndex = 0
     }
-    else {
-        let [seasonNumber, episodeNumber] = [seasonIndex, episodeIndex].map(i => i + 1).map(n => n.toString()).map(s => s.padStart(2, '0'))
+    else if (subtitleIndex === -1) {
         console.warn(`Failed to download subtitle for S${seasonNumber}E${episodeNumber}`)
+        return
     }
+    let downloads = Array.from(subtitles[subtitleIndex].firstChild.firstChild.children[5].children).filter(e => e.tagName === 'A')
+    console.info(`Downloading subtitle ${subtitleName} for S${seasonNumber}E${episodeNumber}`)
+    downloads[formatIndex].click()
 }
 
 function tryDownload() {
@@ -71,7 +74,6 @@ function next() {
     else {
         seasonIndex = seasonSelection.indexOf(true, seasonIndex + 1)
         if (seasonIndex !== -1) {
-            // episodeIndex = 0
             nextSeason()
         }
     }
