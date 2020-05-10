@@ -4,30 +4,28 @@ const filterTV = ['hdtv']
 const filters = [filterBluRay, filterStreaming, filterTV]
 
 let rememberFilter = false
-
 let filterIndex
 const formatIndex = 2
-
 let seasons
 let seasonSelection
 let tableEpisodes
 let tableEntries
-
 let t
 let episode
 let toggleSubtitles
-
 let seasonIndex = -1
 let episodeIndex = -1
+let filterSelection
 
 function download() {
     let [seasonNumber, episodeNumber] = [seasonIndex, episodeIndex].map(i => i + 1).map(n => n.toString()).map(s => s.padStart(2, '0'))
     let subtitles = Array.from(tableEntries).filter(e => e.attributes['data-napis-id'])
     let subtitleName
+    let filter = filters[filterSelection[seasonIndex]]
     let subtitleIndex = subtitles.findIndex(s => {
         subtitleName = s.firstChild.firstChild.children[0].firstChild.attributes['data-wydanie'].value
-        for (let i = 0; i < filters[filterIndex].length; i++) {
-            if (subtitleName.toLowerCase().includes(filters[filterIndex][i])) {
+        for (let i = 0; i < filter.length; i++) {
+            if (subtitleName.toLowerCase().includes(filter[i])) {
                 return true
             }
         }
@@ -80,20 +78,7 @@ function next() {
 }
 
 function nextSeason() {
-    if (!rememberFilter) {
-        let input
-        while (!['1', '2', '3', null].contains(input)) {
-            input = prompt(`Choose filter number for season ${seasonIndex + 1} (1 - BluRay, 2 - Streaming, 3 - TV)`)
-        }
-        if (input === null) {
-            return next()
-        }
-        else {
-            filterIndex = Number.parseInt(input) - 1
-            rememberFilter = ['y', ''].contains(prompt('Remember filter? [Y/n]').toLowerCase())
-        }
-    }
-    console.info(`Using filter ${filterIndex + 1} for season ${seasonIndex + 1}`)
+    console.info(`Using filter ${filterSelection[seasonIndex] + 1} for season ${seasonIndex + 1}`)
     tableEntries = seasons[seasonIndex].children[1].children
     tableEpisodes = Array.from(tableEntries)
     episodeIndex = 0
@@ -105,6 +90,28 @@ function nextEpisode() {
     toggleSubtitles = episode.children[4].children[1]
     toggleSubtitles.click()
     tryDownload()
+}
+
+function selectFilters() {
+    filterSelection = Array(seasons.length).fill(-1)
+    let i = 0
+    while (!rememberFilter) {
+        let input
+        while (!['1', '2', '3', null].contains(input)) {
+            input = prompt(`Choose filter number for season ${i + 1} (1 - BluRay, 2 - Streaming, 3 - TV)`)
+        }
+        if (input === null) {
+            seasonSelection[i] = false
+        }
+        else {
+            let filterIndex = Number.parseInt(input) - 1
+            filterSelection[i] = filterIndex
+            rememberFilter = ['y', ''].contains(prompt('Remember filter? [Y/n]').toLowerCase())
+            if (rememberFilter) {
+                filterSelection.fill(filterIndex, i + 1)
+            }
+        }
+    }
 }
 
 function selectSeasons() {
@@ -146,6 +153,7 @@ function start() {
     seasons = Array.from(document.querySelectorAll('table')).filter(e => e.id === 'translationsTable')
     if (seasons.length > 0) {
         selectSeasons()
+        selectFilters()
         next()
     }
 }
