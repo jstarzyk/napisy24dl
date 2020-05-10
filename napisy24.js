@@ -1,10 +1,9 @@
-const filterBluRay = ['bluray', 'blu-ray', 'bdrip', 'brrip']
-const filterStreaming = ['web']
-const filterTV = ['hdtv']
-const filters = [filterBluRay, filterStreaming, filterTV]
+const filters = [
+    {'name': 'Blu-ray', 'patterns': ['bluray', 'blu-ray', 'bdrip', 'brrip']},
+    {'name': 'Streaming', 'patterns': ['web']},
+    {'name': 'TV', 'patterns': ['hdtv']}
+]
 
-let rememberFilter = false
-let filterIndex
 const formatIndex = 2
 let seasons
 let seasonSelection
@@ -18,18 +17,13 @@ let episodeIndex = -1
 let filterSelection
 
 function download() {
-    let [seasonNumber, episodeNumber] = [seasonIndex, episodeIndex].map(i => i + 1).map(n => n.toString()).map(s => s.padStart(2, '0'))
-    let subtitles = Array.from(tableEntries).filter(e => e.attributes['data-napis-id'])
+    const [seasonNumber, episodeNumber] = [seasonIndex, episodeIndex].map(i => i + 1).map(n => n.toString()).map(s => s.padStart(2, '0'))
+    const subtitles = Array.from(tableEntries).filter(e => e.attributes['data-napis-id'])
     let subtitleName
-    let filter = filters[filterSelection[seasonIndex]]
+    const filterPatterns = filters[filterSelection[seasonIndex]]['patterns']
     let subtitleIndex = subtitles.findIndex(s => {
         subtitleName = s.firstChild.firstChild.children[0].firstChild.attributes['data-wydanie'].value
-        for (let i = 0; i < filter.length; i++) {
-            if (subtitleName.toLowerCase().includes(filter[i])) {
-                return true
-            }
-        }
-        return false
+        return filterPatterns.some(p => subtitleName.toLowerCase().includes(p))
     })
     if (subtitleIndex === -1 && subtitles.length === 1) {
         console.warn(`The only available subtitle for S${seasonNumber}E${episodeNumber} doesn't match the specified filter`)
@@ -39,7 +33,7 @@ function download() {
         console.warn(`Failed to download subtitle for S${seasonNumber}E${episodeNumber}`)
         return
     }
-    let downloads = Array.from(subtitles[subtitleIndex].firstChild.firstChild.children[5].children).filter(e => e.tagName === 'A')
+    const downloads = Array.from(subtitles[subtitleIndex].firstChild.firstChild.children[5].children).filter(e => e.tagName === 'A')
     console.info(`Downloading subtitle ${subtitleName} for S${seasonNumber}E${episodeNumber}`)
     downloads[formatIndex].click()
 }
@@ -93,22 +87,33 @@ function nextEpisode() {
 }
 
 function selectFilters() {
-    filterSelection = Array(seasons.length).fill(-1)
-    let i = 0
-    while (!rememberFilter) {
-        let input
-        while (!['1', '2', '3', null].contains(input)) {
-            input = prompt(`Choose filter number for season ${i + 1} (1 - BluRay, 2 - Streaming, 3 - TV)`)
+    filterSelection = Array(seasons.length)
+    const allowedInput = [...filters.map((f, i) => (i + 1).toString()), null]
+    const filterDisplay = filters.map((f, i) => `${i + 1} - ${f['name']}`).join(', ')
+    const lastSelectedSeason = seasonSelection.lastIndexOf(true)
+    let rememberFilter
+    let filterIndex
+    for (let i = 0; i < seasonSelection.length; i++) {
+        if (!seasonSelection[i]) {
+            continue
         }
-        if (input === null) {
-            seasonSelection[i] = false
+        else if (rememberFilter) {
+            filterSelection[i] = filterIndex
         }
         else {
-            let filterIndex = Number.parseInt(input) - 1
-            filterSelection[i] = filterIndex
-            rememberFilter = ['y', ''].contains(prompt('Remember filter? [Y/n]').toLowerCase())
-            if (rememberFilter) {
-                filterSelection.fill(filterIndex, i + 1)
+            let input
+            while (!allowedInput.contains(input)) {
+                input = prompt(`Choose filter number for season ${i + 1} (${filterDisplay})`)
+            }
+            if (input === null) {
+                seasonSelection[i] = false
+            }
+            else {
+                filterIndex = Number.parseInt(input) - 1
+                filterSelection[i] = filterIndex
+                if (i !== lastSelectedSeason && rememberFilter === undefined) {
+                    rememberFilter = ['y', ''].contains(prompt('Remember filter? [Y/n]').toLowerCase())
+                }
             }
         }
     }
