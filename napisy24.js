@@ -5,12 +5,11 @@ const filters = [
 ]
 
 const formatIndex = 2
+
 let seasons
 let seasonSelection
 let tableEpisodes
 let tableEntries
-let t
-let episode
 let toggleSubtitles
 let seasonIndex = -1
 let episodeIndex = -1
@@ -40,7 +39,7 @@ function download() {
 
 function tryDownload() {
     if (tableEntries.length > tableEpisodes.length) {
-        download(episode)
+        download()
         toggleSubtitles.click()
         tryNext()
     }
@@ -80,8 +79,7 @@ function nextSeason() {
 }
 
 function nextEpisode() {
-    episode = tableEpisodes[episodeIndex]
-    toggleSubtitles = episode.children[4].children[1]
+    toggleSubtitles = tableEpisodes[episodeIndex].children[4].children[1]
     toggleSubtitles.click()
     tryDownload()
 }
