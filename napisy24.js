@@ -91,30 +91,22 @@ function selectFilters() {
     const lastSelectedSeason = seasonSelection.lastIndexOf(true)
     let rememberFilter
     let filterIndex
-    for (let i = 0; i < seasonSelection.length; i++) {
-        if (!seasonSelection[i]) {
-            continue
-        }
-        else if (rememberFilter) {
-            filterSelection[i] = filterIndex
-        }
-        else {
-            let input
-            while (!allowedInput.contains(input)) {
-                input = prompt(`Choose filter number for season ${i + 1} (${filterDisplay})`)
-            }
-            if (input === null) {
-                seasonSelection[i] = false
-            }
-            else {
-                filterIndex = Number.parseInt(input) - 1
-                filterSelection[i] = filterIndex
-                if (i !== lastSelectedSeason && rememberFilter === undefined) {
-                    rememberFilter = ['y', ''].contains(prompt('Remember filter? [Y/n]').toLowerCase())
-                }
-            }
+    for (let i of seasonSelection.map((y, i) => y ? i : null).filter(s => s !== null)) {
+        filterIndex = rememberFilter ? filterIndex : getFilterIndex(i, allowedInput, filterDisplay)
+        filterSelection[i] = filterIndex
+        seasonSelection[i] = filterIndex === -1 ? false : seasonSelection[i]
+        if (rememberFilter === undefined && filterIndex !== -1 && i !== lastSelectedSeason) {
+            rememberFilter = ['y', ''].contains(prompt('Remember filter? [Y/n]').toLowerCase())
         }
     }
+}
+
+function getFilterIndex(i, allowedInput, filterDisplay) {
+    let input
+    while (!allowedInput.contains(input)) {
+        input = prompt(`Choose filter number for season ${i + 1} (${filterDisplay})`)
+    }
+    return input === null ? -1 : Number.parseInt(input) - 1
 }
 
 function selectSeasons() {
@@ -128,7 +120,7 @@ function selectSeasons() {
 }
 
 function parseRange(str) {
-    const results = /^(\d+)-(\d+)$|^(\d+)$/.exec(str)
+    let results = /^(\d+)-(\d+)$|^(\d+)$/.exec(str)
     if (results === null) {
         return
     }
