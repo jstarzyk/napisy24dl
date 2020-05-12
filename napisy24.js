@@ -8,12 +8,12 @@ const formatIndex = 2
 
 let seasons
 let seasonSelection
+let filterSelection
 let tableEpisodes
 let tableEntries
-let toggleSubtitles
+let subtitlesToggle
 let seasonIndex = -1
 let episodeIndex = -1
-let filterSelection
 
 function download() {
     const [seasonNumber, episodeNumber] = [seasonIndex, episodeIndex].map(i => i + 1).map(n => n.toString()).map(s => s.padStart(2, '0'))
@@ -40,7 +40,7 @@ function download() {
 function tryDownload() {
     if (tableEntries.length > tableEpisodes.length) {
         download()
-        toggleSubtitles.click()
+        subtitlesToggle.click()
         tryNext()
     }
     else {
@@ -79,14 +79,14 @@ function nextSeason() {
 }
 
 function nextEpisode() {
-    toggleSubtitles = tableEpisodes[episodeIndex].children[4].children[1]
-    toggleSubtitles.click()
+    subtitlesToggle = tableEpisodes[episodeIndex].children[4].children[1]
+    subtitlesToggle.click()
     tryDownload()
 }
 
 function selectFilters() {
     filterSelection = Array(seasons.length)
-    const allowedInput = [...filters.map((f, i) => (i + 1).toString()), null]
+    const allowedInput = [...Array.from(filters.keys(), i => (i + 1).toString()), null]
     const filterDisplay = filters.map((f, i) => `${i + 1} - ${f['name']}`).join(', ')
     const lastSelectedSeason = seasonSelection.lastIndexOf(true)
     let rememberFilter
