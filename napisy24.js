@@ -120,36 +120,25 @@ function selectFilters() {
 function selectSeasons() {
     seasonSelection = Array(seasons.length).fill(false)
     let input
-    while (true) {
+    while (input !== null && !seasonSelection.some(s => s)) {
         input = prompt(`Choose seasons (max ${seasons.length})`)
-        if (input === null) {
-            break
-        }
-        let results = input.split(',').map(r => /^(\d+)-(\d+)$|^(\d+)$/.exec(r)).filter(r => r !== null)
-        results.forEach(r => r.splice(0, 1))
-        results.forEach(r => {
-            r = r.map(_r => Number.parseInt(_r))
-            let start, end
-            if (!Number.isNaN(r[2])) {
-                start = end = r[2]
-            }
-            else {
-                [start, end] = r[0] <= r[1] ? [r[0], r[1]] : [r[1], r[0]]
-            }
-            if (start > seasons.length || end === 0) {
-                return
-            }
-            else {
-                start = Math.max(1, start) - 1
-                end = Math.min(seasons.length, end)
-                seasonSelection.fill(true, start, end)
-            }
-        })
-        if (seasonSelection.some(s => s)) {
-            break
-        }
+        input.split(',').map(str => parseRange(str)).filter(range => range).forEach(([start, end]) => seasonSelection.fill(true, start, end))
     }
     console.info('Selected seasons: ' + (seasonSelection.map((y, i) => y ? i + 1 : null).filter(s => s !== null).join(', ') || 'none'))
+}
+
+function parseRange(str) {
+    const results = /^(\d+)-(\d+)$|^(\d+)$/.exec(str)
+    if (results === null) {
+        return
+    }
+    results = results.slice(1).map(t => Number.parseInt(t))
+    let [start, end] = Number.isNaN(results[2]) ? results.slice(0, 2).sort() : [results[2], results[2]]
+    if (start <= seasons.length && end !== 0) {
+        start = Math.max(1, start) - 1
+        end = Math.min(seasons.length, end)
+        return [start, end]
+    }
 }
 
 function start() {
