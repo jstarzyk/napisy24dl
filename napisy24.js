@@ -86,7 +86,7 @@ function nextEpisode() {
 
 function selectFilters() {
     filterSelection = Array(seasons.length)
-    const allowedInput = [...Array.from(filters.keys(), i => (i + 1).toString()), null]
+    const allowedInput = [...filters.map((_f, i) => (i + 1).toString()), null]
     const filterDisplay = filters.map((f, i) => `${i + 1} - ${f['name']}`).join(', ')
     const lastSelectedSeason = seasonSelection.lastIndexOf(true)
     let rememberFilter
